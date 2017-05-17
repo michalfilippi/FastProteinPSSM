@@ -1,5 +1,5 @@
 # calc_protein_conservation
-This script computes conservation score per aminoacid for a protein.
+This script computes conservation score per aminoacid for a protein and a profile of a protein.
 
 ## Credits
 Many thanks to authors of BLAST+ suite, CD-HIT, MUSCLE and Jensen-Shannon divergence method.
@@ -32,19 +32,21 @@ This script is based on [ConSurf DB](http://bental.tau.ac.il/new_ConSurfDB/overv
 
 # Running the script
 1. cd to the directory where you copied calc_conservation.sh and the awk scripts.
-2. Run this command: ```./calc_conservation.sh {path to your fasta file}```
+2. Run this command: ```./calc_conservation.sh {path to your fasta file} {path to output directory}```
 
 # Notes
-## GZIP
-The output of the script is compressed.   
-If you don't want it to be compressed, you can either pipe the output through gunzip or remove the last command (gzip) in calc_conservation.sh.
 
-## Output
+## Output files
+
+### ```conservation_query```
 The output should be in the following format:  
 First line: Score: scores divided by command  
 Other lines: Query sequence header: Letter for aminoacids separated by commas.  
 
 First score corresponds to the first letter etc.
+
+### ```pssm```
+Last PSSM used in psiblast for searching databases.
 
 ## How it works
 PSIBLAST is ran with your fasta input on SwissProt database (1 iteration, eval=1e-5).   
