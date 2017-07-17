@@ -12,9 +12,6 @@ fi
 file=$1
 scale=$2
 
-# Create ouput files.
-pssm_file="./pssm"
-
 # Create temp files which are deleted before terminating.
 psiblast_seq=$(tempfile)
 psiblast_output=$(tempfile)
@@ -33,19 +30,31 @@ search () {
     blastdbcmd -db $db -entry_batch $psiblast_output > $psiblast_seq
 
     # Filter using CD-HIT.
-    cd-hit -i $psiblast_seq -o $psiblast_output >&2
+    cd-hit -i $psiblast_seq -o $psiblast_output &> /dev/null
 }
 
 # Search for similar sequences in SwissProt db.
 search swissprot
+
 # Get number of sequences found.
-numSeq=$(grep < $blastResFile '^>' | wc -l)
-echo "Found $numSeq proteins."
+numSeq=$(grep < $psiblast_output '^>' | wc -l)
+echo "Found $numSeq proteins clusters."
 
 # If less than 50 seqs found, fallback to search in UniRef90.
 [ $((numSeq >= 50)) = 0 ] && search uniref90
 
-python process_pssm "$psiblast_pssm" "$scale" > pssm_file
+# If no pssm was returned generate dummy pssm
+lines=`cat $psiblast_pssm | wc -l`
+if test "$lines" -le "1"
+then
+    # pssm calculation failed
+    echo "PSSM calculation failed, generating dummy PSSM."
+    python2 gen_dummy_pssm.py "$file" > $psiblast_pssm
+fi
+
+# process PSSM into readable format and scale it if -s parameter was passed
+python2 process_pssm.py "$psiblast_pssm" "$scale" 
+
 
 # Delete temp files.
 echo $psiblast_output $psiblast_seq $psiblast_pssm
